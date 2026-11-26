@@ -53,7 +53,7 @@ class QuizGame:
             1: self.play_quiz,
             2: self.add_quiz,
             3: self.list_quizzes,
-            4: self.not_ready,
+            4: self.show_best_score,
             5: self.not_ready,
             6: self.not_ready,
             7: self.quit,
@@ -235,6 +235,20 @@ class QuizGame:
         for number, quiz in enumerate(self.quizzes, start=1):
             print(f"[{number}] {quiz.question}")
         print(THIN_LINE)
+
+    # ------------------------------------------------------------------
+    # 4. 점수 확인
+    # ------------------------------------------------------------------
+    def show_best_score(self):
+        if self.best_score is None:
+            print("\n📭 아직 퀴즈를 풀지 않았습니다. 1번 메뉴에서 퀴즈를 풀어 보세요!")
+            return
+        detail = ""
+        for record in self.history:
+            if record.get("score") == self.best_score:
+                detail = f" ({record['total']}문제 중 {record['correct']}문제 정답)"
+                break
+        print(f"\n🏆 최고 점수: {self.best_score}점{detail}")
 
     # ------------------------------------------------------------------
     # 파일 저장 / 불러오기
