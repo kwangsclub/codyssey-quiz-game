@@ -5,6 +5,7 @@ from datetime import datetime
 
 from default_quizzes import get_default_quizzes
 from quiz import Quiz
+from storage import StateStorage
 
 LINE = "=" * 40
 THIN_LINE = "-" * 40
@@ -24,7 +25,8 @@ class QuizGame:
         "종료",
     ]
 
-    def __init__(self):
+    def __init__(self, storage=None):
+        self.storage = storage or StateStorage()
         self.quizzes = []
         self.best_score = None  # 아직 퀴즈를 풀지 않았으면 None
         self.history = []
@@ -64,7 +66,8 @@ class QuizGame:
         print("\n🚧 아직 준비 중인 기능입니다.")
 
     def quit(self):
-        print("\n👋 프로그램을 종료합니다.")
+        self.save_state()
+        print("\n💾 데이터를 저장했습니다. 👋 프로그램을 종료합니다.")
         self.is_running = False
 
     # ------------------------------------------------------------------
@@ -254,9 +257,22 @@ class QuizGame:
     # 파일 저장 / 불러오기
     # ------------------------------------------------------------------
     def load_state(self):
-        """(파일 저장 기능 구현 전) 기본 퀴즈로 시작한다."""
+        state, status = self.storage.load()
+        if status == "ok":
+            self.quizzes = state["quizzes"]
+            self.best_score = state["best_score"]
+            self.history = state["history"]
+            best = f"{self.best_score}점" if self.best_score is not None else "기록 없음"
+            print(f"📂 저장된 데이터를 불러왔습니다. (퀴즈 {len(self.quizzes)}개, 최고점수 {best})")
+            return
+        if status == "missing":
+            print("📂 저장된 데이터가 없어 기본 퀴즈로 시작합니다.")
+        else:
+            print("⚠️ 데이터 파일이 손상되어 기본 퀴즈 데이터로 복구합니다.")
         self.quizzes = get_default_quizzes()
+        self.best_score = None
+        self.history = []
+        self.save_state()
 
     def save_state(self):
-        """파일 저장 기능은 이후 구현 예정."""
-        return True
+        return self.storage.save(self.quizzes, self.best_score, self.history)
