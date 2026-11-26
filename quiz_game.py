@@ -52,7 +52,7 @@ class QuizGame:
         actions = {
             1: self.play_quiz,
             2: self.add_quiz,
-            3: self.not_ready,
+            3: self.list_quizzes,
             4: self.not_ready,
             5: self.not_ready,
             6: self.not_ready,
@@ -222,6 +222,19 @@ class QuizGame:
         self.quizzes.append(Quiz(question, choices, answer, hint))
         self.save_state()
         print("\n✅ 퀴즈가 추가되었습니다!")
+
+    # ------------------------------------------------------------------
+    # 3. 퀴즈 목록
+    # ------------------------------------------------------------------
+    def list_quizzes(self):
+        if not self.quizzes:
+            print("\n📭 등록된 퀴즈가 없습니다.")
+            return
+        print(f"\n📋 등록된 퀴즈 목록 (총 {len(self.quizzes)}개)\n")
+        print(THIN_LINE)
+        for number, quiz in enumerate(self.quizzes, start=1):
+            print(f"[{number}] {quiz.question}")
+        print(THIN_LINE)
 
     # ------------------------------------------------------------------
     # 파일 저장 / 불러오기
