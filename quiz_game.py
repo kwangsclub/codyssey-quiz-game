@@ -56,14 +56,11 @@ class QuizGame:
             2: self.add_quiz,
             3: self.list_quizzes,
             4: self.show_best_score,
-            5: self.not_ready,
-            6: self.not_ready,
+            5: self.delete_quiz,
+            6: self.show_history,
             7: self.quit,
         }
         actions[choice]()
-
-    def not_ready(self):
-        print("\n🚧 아직 준비 중인 기능입니다.")
 
     def quit(self):
         self.save_state()
@@ -252,6 +249,42 @@ class QuizGame:
                 detail = f" ({record['total']}문제 중 {record['correct']}문제 정답)"
                 break
         print(f"\n🏆 최고 점수: {self.best_score}점{detail}")
+
+    # ------------------------------------------------------------------
+    # 5. 퀴즈 삭제
+    # ------------------------------------------------------------------
+    def delete_quiz(self):
+        if not self.quizzes:
+            print("\n📭 삭제할 퀴즈가 없습니다.")
+            return
+        self.list_quizzes()
+        number = self.read_number(
+            f"삭제할 퀴즈 번호 (1-{len(self.quizzes)}): ", 1, len(self.quizzes)
+        )
+        target = self.quizzes[number - 1]
+        if not self.confirm(f"'{target.question}' 퀴즈를 삭제할까요? (y/n): "):
+            print("↩️ 삭제를 취소했습니다.")
+            return
+        self.quizzes.pop(number - 1)
+        self.save_state()
+        print("🗑️ 퀴즈가 삭제되었습니다.")
+
+    # ------------------------------------------------------------------
+    # 6. 게임 기록
+    # ------------------------------------------------------------------
+    def show_history(self):
+        if not self.history:
+            print("\n📭 아직 게임 기록이 없습니다.")
+            return
+        print(f"\n📜 게임 기록 (총 {len(self.history)}회)\n")
+        print(THIN_LINE)
+        for number, record in enumerate(self.history, start=1):
+            print(
+                f"{number}. {record['played_at']} | "
+                f"{record['total']}문제 중 {record['correct']}문제 정답 | "
+                f"힌트 {record.get('hints', 0)}회 | {record['score']}점"
+            )
+        print(THIN_LINE)
 
     # ------------------------------------------------------------------
     # 파일 저장 / 불러오기
