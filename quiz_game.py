@@ -51,7 +51,7 @@ class QuizGame:
         """선택한 메뉴 번호에 맞는 기능을 실행한다."""
         actions = {
             1: self.play_quiz,
-            2: self.not_ready,
+            2: self.add_quiz,
             3: self.not_ready,
             4: self.not_ready,
             5: self.not_ready,
@@ -206,6 +206,22 @@ class QuizGame:
             }
         )
         self.save_state()
+
+    # ------------------------------------------------------------------
+    # 2. 퀴즈 추가
+    # ------------------------------------------------------------------
+    def add_quiz(self):
+        print("\n📌 새로운 퀴즈를 추가합니다.\n")
+        question = self.read_text("문제를 입력하세요: ")
+        choices = []
+        for index in range(1, Quiz.CHOICE_COUNT + 1):
+            choices.append(self.read_text(f"선택지 {index}: "))
+        answer = self.read_number(f"정답 번호 (1-{Quiz.CHOICE_COUNT}): ", 1, Quiz.CHOICE_COUNT)
+        hint = input("힌트 (없으면 Enter): ").strip()
+
+        self.quizzes.append(Quiz(question, choices, answer, hint))
+        self.save_state()
+        print("\n✅ 퀴즈가 추가되었습니다!")
 
     # ------------------------------------------------------------------
     # 파일 저장 / 불러오기
