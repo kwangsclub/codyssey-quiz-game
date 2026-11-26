@@ -1,5 +1,7 @@
 """게임 전체(메뉴, 퀴즈 풀기/추가/목록/삭제, 점수, 저장)를 관리하는 QuizGame 클래스."""
 
+from quiz import Quiz
+
 LINE = "=" * 40
 THIN_LINE = "-" * 40
 HINT_KEYS = ("h", "H", "ㅗ")
