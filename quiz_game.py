@@ -1,5 +1,8 @@
 """게임 전체(메뉴, 퀴즈 풀기/추가/목록/삭제, 점수, 저장)를 관리하는 QuizGame 클래스."""
 
+import random
+from datetime import datetime
+
 from default_quizzes import get_default_quizzes
 from quiz import Quiz
 
@@ -47,7 +50,7 @@ class QuizGame:
     def handle_menu(self, choice):
         """선택한 메뉴 번호에 맞는 기능을 실행한다."""
         actions = {
-            1: self.not_ready,
+            1: self.play_quiz,
             2: self.not_ready,
             3: self.not_ready,
             4: self.not_ready,
@@ -121,6 +124,88 @@ class QuizGame:
             if answer in ("n", "no", "ㅜ"):
                 return False
             print("⚠️ y 또는 n 을 입력하세요.")
+
+    # ------------------------------------------------------------------
+    # 1. 퀴즈 풀기
+    # ------------------------------------------------------------------
+    def play_quiz(self):
+        if not self.quizzes:
+            print("\n📭 등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해 주세요.")
+            return
+
+        total_available = len(self.quizzes)
+        count = self.read_number(
+            f"\n몇 문제를 풀까요? (1-{total_available}): ", 1, total_available
+        )
+        selected = random.sample(self.quizzes, count)  # 랜덤 출제
+
+        print(f"\n📝 퀴즈를 시작합니다! (총 {count}문제)")
+        print("💡 정답 대신 h 를 입력하면 힌트를 볼 수 있어요. (해당 문제 점수 절반)")
+
+        correct_count = 0
+        hint_count = 0
+        earned = 0.0
+        point_per_quiz = 100 / count
+        for number, quiz in enumerate(selected, start=1):
+            print()
+            print(THIN_LINE)
+            is_correct, used_hint = self.ask_quiz(quiz, number)
+            if used_hint:
+                hint_count += 1
+            if is_correct:
+                correct_count += 1
+                earned += point_per_quiz / 2 if used_hint else point_per_quiz
+
+        score = round(earned)
+        self.show_result(count, correct_count, hint_count, score)
+        self.record_result(count, correct_count, hint_count, score)
+
+    def ask_quiz(self, quiz, number):
+        """한 문제를 출제하고 (정답 여부, 힌트 사용 여부) 를 반환한다."""
+        quiz.display(number)
+        used_hint = False
+        while True:
+            answer = self.read_number("정답 입력: ", 1, Quiz.CHOICE_COUNT, allow_hint=True)
+            if answer != "hint":
+                break
+            if not quiz.has_hint():
+                print("🙅 이 문제는 힌트가 없습니다.")
+            elif used_hint:
+                print(f"💡 힌트: {quiz.hint}")
+            else:
+                used_hint = True
+                print(f"💡 힌트: {quiz.hint} (이 문제 점수는 절반만 인정돼요)")
+
+        if quiz.is_correct(answer):
+            print("✅ 정답입니다!")
+            return True, used_hint
+        print(f"❌ 오답입니다. 정답은 {quiz.answer}번 '{quiz.choices[quiz.answer - 1]}' 입니다.")
+        return False, used_hint
+
+    def show_result(self, total, correct, hints, score):
+        print()
+        print(LINE)
+        print(f"🏆 결과: {total}문제 중 {correct}문제 정답! ({score}점)")
+        if hints:
+            print(f"💡 힌트 사용: {hints}회")
+        if self.best_score is None or score > self.best_score:
+            print("🎉 새로운 최고 점수입니다!")
+        print(LINE)
+
+    def record_result(self, total, correct, hints, score):
+        """최고 점수를 비교/갱신하고 게임 기록을 남긴 뒤 저장한다."""
+        if self.best_score is None or score > self.best_score:
+            self.best_score = score
+        self.history.append(
+            {
+                "played_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "total": total,
+                "correct": correct,
+                "hints": hints,
+                "score": score,
+            }
+        )
+        self.save_state()
 
     # ------------------------------------------------------------------
     # 파일 저장 / 불러오기
