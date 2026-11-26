@@ -1,5 +1,6 @@
 """게임 전체(메뉴, 퀴즈 풀기/추가/목록/삭제, 점수, 저장)를 관리하는 QuizGame 클래스."""
 
+from default_quizzes import get_default_quizzes
 from quiz import Quiz
 
 LINE = "=" * 40
@@ -126,7 +127,7 @@ class QuizGame:
     # ------------------------------------------------------------------
     def load_state(self):
         """(파일 저장 기능 구현 전) 기본 퀴즈로 시작한다."""
-        self.quizzes = []
+        self.quizzes = get_default_quizzes()
 
     def save_state(self):
         """파일 저장 기능은 이후 구현 예정."""
